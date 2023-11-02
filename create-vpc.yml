@@ -2,7 +2,7 @@ Resources:
   HIITVPC:
     Type: AWS::EC2::VPC
     Properties:
-      CidrBlock: 10.1.0.0/23
+      CidrBlock: 10.1.0.0/16
       EnableDnsSupport: true
       EnableDnsHostnames: true
       Tags:
@@ -17,3 +17,23 @@ Resources:
     Properties:
       VpcId: !Ref HIITVPC
       InternetGatewayId: !Ref InternetGateway
+
+  PublicSubnetA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref HIITVPC
+      CidrBlock: 10.1.1.0/24
+      AvailabilityZone: "eu-north-1a"       
+      Tags:
+      - Key: Name
+        Value: !Sub ${AWS::StackName}-Public-A
+
+  PrivateSubnetA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref HIITVPC
+      CidrBlock: 10.1.2.0/24
+      AvailabilityZone: "eu-north-1a"
+      Tags:
+      - Key: Name
+        Value: !Sub ${AWS::StackName}-Private-A
