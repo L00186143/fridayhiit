@@ -1,4 +1,16 @@
+Parameters:
+  InstanceType:
+    Type: String
+    Default: t3.micro
+    Description: EC2 instance type
+  
+  KeyName:
+    Type: 'AWS::EC2::KeyPair::KeyName'
+    Description: 'friday-hiit'
+
+
 Resources:
+
   HIITVPC:
     Type: AWS::EC2::VPC
     Properties:
@@ -48,3 +60,14 @@ Resources:
       Tags:
       - Key: Name
         Value: !Sub ${AWS::StackName}-Private-B
+
+  JumpBox:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: ami-0df024d681444bc53
+      InstanceType: !Ref InstanceType
+      KeyName: !Ref KeyName
+      SubnetId: !Ref PublicSubnetA
+      Tags:
+        - Key: Name
+          Value: JumpBox
