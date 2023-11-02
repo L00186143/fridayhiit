@@ -37,3 +37,14 @@ Resources:
       Tags:
       - Key: Name
         Value: !Sub ${AWS::StackName}-Private-A
+
+
+  PrivateSubnetB:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref HIITVPC
+      CidrBlock: 10.1.3.0/24
+      AvailabilityZone: "eu-north-1b"
+      Tags:
+      - Key: Name
+        Value: !Sub ${AWS::StackName}-Private-B
