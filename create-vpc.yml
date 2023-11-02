@@ -8,3 +8,12 @@ Resources:
       Tags:
       - Key: Name
         Value:  !Join ['', [!Ref "AWS::StackName", "-VPC" ]]
+    
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    DependsOn: HIITVPC
+  AttachGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref HIITVPC
+      InternetGatewayId: !Ref InternetGateway
