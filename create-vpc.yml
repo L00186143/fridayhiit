@@ -172,6 +172,35 @@ Resources:
         - Key: Name
           Value: ApplicationServer
 
+  WebHostingServer:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: ami-0df024d681444bc53
+      InstanceType: !Ref InstanceType
+      KeyName: !Ref KeyName
+      SubnetId: !Ref PublicSubnetA
+      SecurityGroupIds:
+        - !Ref WebHostingServerSecurityGroup  # Use the new security group
+      Tags:
+        - Key: Name
+          Value: WebHostingServer
+
+  WebHostingServerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group for the web hosting server
+      VpcId: !Ref HIITVPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          SourceSecurityGroupId: !GetAtt ApplicationServerSecurityGroup.GroupId
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+
+
   DatabaseServerSecurityGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
