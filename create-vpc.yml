@@ -127,10 +127,9 @@ Resources:
       VpcId: !Ref HIITVPC
       SecurityGroupIngress:
         - IpProtocol: tcp
-          FromPort: 22  # Assuming SSH access
+          FromPort: 22
           ToPort: 22
-          CidrIp: 0.0.0.0/0  # Allowing SSH access from any IP for demonstration purposes
-        # Add more rules for required access
+          CidrIp: 0.0.0.0/0
 
   JumpBox:
     Type: AWS::EC2::Instance
@@ -140,7 +139,7 @@ Resources:
       KeyName: !Ref KeyName
       SubnetId: !Ref PublicSubnetA
       SecurityGroupIds:
-        - !Ref JumpBoxSecurityGroup  # Assign the JumpBox instance the newly created security group
+        - !Ref JumpBoxSecurityGroup
       Tags:
         - Key: Name
           Value: JumpBox
@@ -154,7 +153,7 @@ Resources:
       KeyName: !Ref KeyName
       SubnetId: !Ref PrivateSubnetB
       SecurityGroupIds:
-        - !Ref DatabaseServerSecurityGroup  # Reference a new security group for the database server
+        - !Ref DatabaseServerSecurityGroup
       Tags:
         - Key: Name
           Value: DatabaseServer
@@ -168,7 +167,7 @@ Resources:
       KeyName: !Ref KeyName
       SubnetId: !Ref PrivateSubnetB
       SecurityGroupIds:
-        - !Ref ApplicationServerSecurityGroup  # Reference a new security group for the application server
+        - !Ref ApplicationServerSecurityGroup
       Tags:
         - Key: Name
           Value: ApplicationServer
@@ -180,9 +179,13 @@ Resources:
       VpcId: !Ref HIITVPC
       SecurityGroupIngress:
         - IpProtocol: tcp
-          FromPort: 3306  # Assuming a MySQL database, adjust the port if needed
+          FromPort: 3306
           ToPort: 3306
-          SourceSecurityGroupId: !GetAtt JumpBoxSecurityGroup.GroupId  # Allow access from the JumpBox's security group
+          SourceSecurityGroupId: !GetAtt JumpBoxSecurityGroup.GroupId
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          SourceSecurityGroupId: !GetAtt JumpBoxSecurityGroup.GroupId
 
   ApplicationServerSecurityGroup:
     Type: AWS::EC2::SecurityGroup
@@ -191,8 +194,15 @@ Resources:
       VpcId: !Ref HIITVPC
       SecurityGroupIngress:
         - IpProtocol: tcp
-          FromPort: 80  # Example for HTTP, adjust based on your application's requirements
+          FromPort: 80
           ToPort: 80
-          SourceSecurityGroupId: !GetAtt JumpBoxSecurityGroup.GroupId  # Allow access from the JumpBox's security group
-
+          SourceSecurityGroupId: !GetAtt JumpBoxSecurityGroup.GroupId
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          SourceSecurityGroupId: !GetAtt JumpBoxSecurityGroup.GroupId
+        - IpProtocol: tcp
+          FromPort: 3306
+          ToPort: 3306
+          SourceSecurityGroupId: !GetAtt DatabaseServerSecurityGroup.GroupId
           
