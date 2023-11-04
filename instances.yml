@@ -1,0 +1,127 @@
+Parameters:
+  InstanceType:
+    Type: String
+    Default: t3.micro
+    Description: EC2 instance type
+  
+  KeyName:
+    Type: 'AWS::EC2::KeyPair::KeyName'
+    Description: 'friday-hiit'
+
+Resources:
+  
+  JumpBox:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: ami-0df024d681444bc53
+      InstanceType: !Ref InstanceType
+      KeyName: !Ref KeyName
+      SubnetId: !ImportValue PublicSubnetAID
+      SecurityGroupIds:
+        - !Ref JumpBoxSecurityGroup
+      Tags:
+        - Key: Name
+          Value: JumpBox
+
+  
+  DatabaseServer:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: ami-0df024d681444bc53
+      InstanceType: !Ref InstanceType
+      KeyName: !Ref KeyName
+      SubnetId: !ImportValue PrivateSubnetBID
+      SecurityGroupIds:
+        - !Ref DatabaseServerSecurityGroup
+      Tags:
+        - Key: Name
+          Value: DatabaseServer
+
+
+  ApplicationServer:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: ami-0df024d681444bc53
+      InstanceType: !Ref InstanceType
+      KeyName: !Ref KeyName
+      SubnetId: !ImportValue PrivateSubnetBID
+      SecurityGroupIds:
+        - !Ref ApplicationServerSecurityGroup
+      Tags:
+        - Key: Name
+          Value: ApplicationServer
+
+  WebHostingServer:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: ami-0df024d681444bc53
+      InstanceType: !Ref InstanceType
+      KeyName: !Ref KeyName
+      SubnetId: !ImportValue PublicSubnetAID
+      SecurityGroupIds:
+        - !Ref WebHostingServerSecurityGroup
+      Tags:
+        - Key: Name
+          Value: WebHostingServer
+
+  JumpBoxSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group for JumpBox
+      VpcId: !ImportValue VPCID
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+
+  WebHostingServerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group for the web hosting server
+      VpcId: !ImportValue VPCID
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          SourceSecurityGroupId: !GetAtt ApplicationServerSecurityGroup.GroupId
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+
+
+  DatabaseServerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group for the database server
+      VpcId: !ImportValue VPCID
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 3306
+          ToPort: 3306
+          SourceSecurityGroupId: !GetAtt JumpBoxSecurityGroup.GroupId
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          SourceSecurityGroupId: !GetAtt JumpBoxSecurityGroup.GroupId
+
+  ApplicationServerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Security group for the application server
+      VpcId: !ImportValue VPCID
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          SourceSecurityGroupId: !GetAtt JumpBoxSecurityGroup.GroupId
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          SourceSecurityGroupId: !GetAtt JumpBoxSecurityGroup.GroupId
+        - IpProtocol: tcp
+          FromPort: 3306
+          ToPort: 3306
+          SourceSecurityGroupId: !GetAtt DatabaseServerSecurityGroup.GroupId
+          

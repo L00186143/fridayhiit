@@ -1,0 +1,142 @@
+Resources:
+
+  HIITVPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: 10.1.0.0/16
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      Tags:
+      - Key: Name
+        Value:  !Join ['', [!Ref "AWS::StackName", "-VPC" ]]
+    
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    DependsOn: HIITVPC
+  AttachGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref HIITVPC
+      InternetGatewayId: !Ref InternetGateway
+
+  PublicSubnetA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref HIITVPC
+      CidrBlock: 10.1.1.0/24
+      AvailabilityZone: "eu-north-1a"
+      MapPublicIpOnLaunch: true     
+      Tags:
+      - Key: Name
+        Value: !Sub ${AWS::StackName}-Public-A
+
+  PrivateSubnetA:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref HIITVPC
+      CidrBlock: 10.1.2.0/24
+      AvailabilityZone: "eu-north-1a"
+      Tags:
+      - Key: Name
+        Value: !Sub ${AWS::StackName}-Private-A
+
+
+  PrivateSubnetB:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref HIITVPC
+      CidrBlock: 10.1.3.0/24
+      AvailabilityZone: "eu-north-1b"
+      Tags:
+      - Key: Name
+        Value: !Sub ${AWS::StackName}-Private-B
+
+  PublicRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref HIITVPC
+      Tags:
+      - Key: Name
+        Value: Public
+  PublicRoute1:
+    Type: AWS::EC2::Route
+    DependsOn: AttachGateway
+    Properties:
+      RouteTableId: !Ref PublicRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      GatewayId: !Ref InternetGateway
+
+  PrivateRouteTable:
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref HIITVPC
+      Tags:
+      - Key: Name
+        Value: Private
+  PrivateRoute1:
+    Type: AWS::EC2::Route
+    Properties:
+      RouteTableId: !Ref PrivateRouteTable
+      DestinationCidrBlock: 0.0.0.0/0
+      NatGatewayId: !Ref NATGateway  
+
+  NATGateway:
+   Type: AWS::EC2::NatGateway
+   Properties:
+     AllocationId: !GetAtt ElasticIPAddress.AllocationId
+     SubnetId: !Ref PublicSubnetA
+     Tags:
+     - Key: Name
+       Value: !Sub NAT-${AWS::StackName}
+  ElasticIPAddress:
+    Type: AWS::EC2::EIP
+    Properties:
+      Domain: HIITVPC
+
+  PublicSubnetARouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnetA
+      RouteTableId: !Ref PublicRouteTable
+  PrivateSubnetARouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PrivateSubnetA
+      RouteTableId: !Ref PrivateRouteTable
+  PrivateSubnetBRouteTableAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PrivateSubnetB
+      RouteTableId: !Ref PrivateRouteTable
+
+
+Outputs:
+  VPCID:
+    Value: !Ref HIITVPC
+    Export:
+      Name: VPCID
+
+  PublicSubnetAID:
+    Value: !Ref PublicSubnetA
+    Export:
+      Name: PublicSubnetAID
+
+  PrivateSubnetAID:
+    Value: !Ref PrivateSubnetA
+    Export:
+      Name: PrivateSubnetAID
+
+  PrivateSubnetBID:
+    Value: !Ref PrivateSubnetB
+    Export:
+      Name: PrivateSubnetBID
+
+  InternetGatewayID:
+    Value: !Ref InternetGateway
+    Export:
+      Name: InternetGatewayID
+
+  NATGatewayID:
+    Value: !Ref NATGateway
+    Export:
+      Name: NATGatewayID

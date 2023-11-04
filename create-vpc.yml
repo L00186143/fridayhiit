@@ -180,7 +180,7 @@ Resources:
       KeyName: !Ref KeyName
       SubnetId: !Ref PublicSubnetA
       SecurityGroupIds:
-        - !Ref WebHostingServerSecurityGroup  # Use the new security group
+        - !Ref WebHostingServerSecurityGroup
       Tags:
         - Key: Name
           Value: WebHostingServer
