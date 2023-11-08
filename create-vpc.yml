@@ -222,9 +222,6 @@ Resources:
       GroupDescription: Security group for the application server
       VpcId: !Ref HIITVPC
       SecurityGroupIngress:
-        - IpProtocol: tcp
-          FromPort: 80
-          ToPort: 80
           SourceSecurityGroupId: !GetAtt JumpBoxSecurityGroup.GroupId
         - IpProtocol: tcp
           FromPort: 22
